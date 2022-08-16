@@ -1,0 +1,88 @@
+{
+  "if": {
+    "anyOf": [
+      {
+        "field": "Microsoft.Compute/virtualMachines/securityProfile.encryptionAtHost",
+        "exists": false
+      },
+      {
+        "allOf": [
+        {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Compute/virtualMachines"
+            },
+            {
+              "field": "Microsoft.Compute/virtualMachines/securityProfile.encryptionAtHost",
+              "exists": true
+            }
+          ]
+        },
+        { 
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Compute/virtualMachines"
+            },
+            {
+              "field": "Microsoft.Compute/virtualMachines/securityProfile.encryptionAtHost",
+              "notEquals": true
+            }
+          ]
+        }
+      ]
+      }
+    ]
+  },
+  "then": {
+    "effect": "deployIfNotExists",
+    "details": {
+      "type": "Microsoft.Compute/virtualMachines",
+      "existenceCondition": 
+      { 
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Compute/virtualMachines"
+          },
+          {
+            "field": "Microsoft.Compute/virtualMachines/securityProfile.encryptionAtHost",
+            "equals": true
+          }
+        ]
+      },      
+      "roleDefinitionIds": [
+        "/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c"
+      ],
+      "deployment": {
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "vmName": { "type" : "string" },
+              "location": { "type" : "string" }
+            },
+            "resources": [{
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2021-11-01",
+              "name": "[parameters('vmName')]",  
+              "location": "[parameters('location')]",
+              "properties": {
+                "SecurityProfile": {
+                  "encryptionAtHost": true
+                }
+              }
+            }]
+          },
+          "parameters": {
+            "vmName": { "value": "[field('Name')]" },
+            "location": { "value": "[field('location')]" }  
+          }
+        }
+      }
+    }
+  }
+}
